@@ -1,0 +1,1437 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Academic Survival Dashboard</title>
+<link rel="manifest" href="./manifest.json">
+<meta name="theme-color" content="#1F3864">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Academic Dashboard">
+<link rel="apple-touch-icon" href="./icon-192.png">
+<link rel="icon" href="./icon-192.png">
+<style>
+  :root{
+    --navy:#1F3864;
+    --navy-deep:#152648;
+    --blue:#2E5395;
+    --green:#1E7145;
+    --green-soft:#E2EFDA;
+    --amber:#B4690E;
+    --amber-soft:#FBEEDD;
+    --red:#A6291F;
+    --red-soft:#FBE7E5;
+    --paper:#F6F5F1;
+    --card:#FFFFFF;
+    --ink:#20242C;
+    --muted:#6B7280;
+    --border:#E1DFD8;
+    --border-strong:#C9C6BC;
+    --serif: Georgia, 'Iowan Old Style', 'Times New Roman', serif;
+    --sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;height:100%;}
+  body{
+    font-family:var(--sans);
+    background:var(--paper);
+    color:var(--ink);
+    -webkit-font-smoothing:antialiased;
+  }
+  ::selection{background:#cfdcf2;}
+  a{color:inherit;}
+  button{font-family:inherit;}
+
+  #shell{display:flex;min-height:100vh;}
+
+  /* ---------- Sidebar ---------- */
+  #sidebar{
+    width:230px;flex:none;background:var(--navy-deep);color:#EDEFF4;
+    display:flex;flex-direction:column;
+    position:sticky;top:0;height:100vh;overflow-y:auto;
+  }
+  .brand{
+    display:flex;align-items:center;gap:10px;
+    padding:20px 16px 16px;border-bottom:1px solid rgba(255,255,255,0.09);
+  }
+  .crest{
+    width:38px;height:38px;border-radius:50%;background:var(--green);
+    display:flex;align-items:center;justify-content:center;flex:none;
+    font-family:var(--serif);font-weight:700;font-size:13px;color:#fff;letter-spacing:0.5px;
+  }
+  .brand-text{font-family:var(--serif);line-height:1.15;}
+  .brand-text .t1{font-size:14.5px;font-weight:700;}
+  .brand-text .t2{font-size:11px;color:#B7C1D6;}
+
+  nav.navgroups{padding:10px 8px 20px;flex:1;}
+  .navlabel{
+    font-size:10.5px;color:#8494B5;margin:16px 10px 6px;letter-spacing:0.3px;
+  }
+  .navitem{
+    display:flex;align-items:center;gap:9px;width:100%;text-align:left;
+    background:none;border:none;color:#D7DCE8;padding:8px 10px;border-radius:7px;
+    font-size:13.3px;cursor:pointer;margin:1px 0;
+  }
+  .navitem:hover{background:rgba(255,255,255,0.06);}
+  .navitem.active{background:var(--blue);color:#fff;font-weight:600;}
+  .navitem .dot{width:6px;height:6px;border-radius:50%;background:currentColor;opacity:0.55;flex:none;}
+
+  /* ---------- Mobile top tabs ---------- */
+  #mobiletabs{display:none;}
+
+  /* ---------- Main ---------- */
+  #main{flex:1;min-width:0;}
+  #topbar{
+    position:sticky;top:0;z-index:5;background:var(--paper);
+    border-bottom:1px solid var(--border);
+    padding:14px 22px;display:flex;align-items:baseline;justify-content:space-between;gap:12px;
+  }
+  #topbar h1{font-family:var(--serif);font-size:19px;margin:0;font-weight:700;}
+  #topbar .sub{font-size:12px;color:var(--muted);}
+  #content{padding:20px 22px 70px;max-width:1180px;}
+  section.pane{display:none;}
+  section.pane.active{display:block;}
+
+  h2.section-title{font-family:var(--serif);font-size:16.5px;margin:0 0 3px;}
+  p.section-sub{font-size:12.5px;color:var(--muted);margin:0 0 16px;max-width:640px;}
+
+  .card{
+    background:var(--card);border:1px solid var(--border);border-radius:10px;
+    padding:16px 18px;margin-bottom:16px;
+  }
+  .card h3{font-size:13px;margin:0 0 10px;font-weight:700;}
+
+  /* ---------- Form grid ---------- */
+  .fgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px 20px;}
+  .fgrid.narrow{grid-template-columns:1fr;}
+  .field label{display:block;font-size:11.5px;color:var(--muted);margin-bottom:4px;}
+  .field input, .field select{
+    width:100%;padding:8px 9px;border:1px solid var(--border-strong);border-radius:6px;
+    font-size:13.5px;background:#fff;color:var(--ink);font-family:inherit;
+  }
+  .field input:focus, .field select:focus, table input:focus, table select:focus{
+    outline:2px solid var(--blue);outline-offset:0;border-color:var(--blue);
+  }
+
+  /* ---------- KPI tiles ---------- */
+  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px;}
+  .kpi{border-radius:10px;padding:14px 15px;color:#fff;}
+  .kpi .label{font-size:11px;opacity:0.85;margin-bottom:8px;}
+  .kpi .value{font-family:var(--serif);font-size:26px;font-weight:700;line-height:1;}
+  .kpi .value.small{font-size:16px;}
+  .kpi.navy{background:var(--navy);}
+  .kpi.blue{background:var(--blue);}
+  .kpi.green{background:var(--green);}
+  .kpi.amber{background:var(--amber);}
+  .kpi.red{background:var(--red);}
+  .kpi.ink{background:#3A3F4B;}
+
+  /* ---------- Tables ---------- */
+  .tablewrap{overflow-x:auto;border:1px solid var(--border);border-radius:9px;}
+  table.data{border-collapse:collapse;width:100%;font-size:13px;min-width:640px;}
+  table.data th{
+    background:var(--blue);color:#fff;font-weight:600;font-size:11.5px;
+    text-align:left;padding:8px 9px;white-space:nowrap;position:sticky;top:0;
+  }
+  table.data td{padding:5px 7px;border-bottom:1px solid var(--border);vertical-align:middle;}
+  table.data tbody tr:nth-child(even){background:#FAFAF8;}
+  table.data input, table.data select{
+    width:100%;min-width:54px;border:1px solid transparent;background:transparent;padding:4px 5px;
+    border-radius:5px;font-size:12.8px;font-family:inherit;color:var(--ink);
+  }
+  table.data input:hover, table.data select:hover{border-color:var(--border-strong);}
+  table.data td.num input{text-align:right;}
+  table.data td.num{min-width:64px;}
+  table.data td.readonly{color:var(--muted);font-variant-numeric:tabular-nums;}
+  table.data .rowdel{
+    background:none;border:none;color:var(--red);cursor:pointer;font-size:15px;padding:2px 6px;
+  }
+  .addrow{
+    margin-top:9px;background:var(--card);border:1px dashed var(--border-strong);color:var(--blue);
+    padding:7px 14px;border-radius:7px;font-size:12.5px;cursor:pointer;font-weight:600;
+  }
+  .addrow:hover{background:#EEF2FA;}
+
+  .badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:700;}
+  .badge.ok{background:var(--green-soft);color:var(--green);}
+  .badge.warn{background:var(--amber-soft);color:var(--amber);}
+  .badge.bad{background:var(--red-soft);color:var(--red);}
+  .badge.muted{background:#EFEEEA;color:var(--muted);}
+
+  /* ---------- GPA accordion ---------- */
+  .gpablock{border:1px solid var(--border);border-radius:9px;margin-bottom:12px;overflow:hidden;}
+  .gpablock .ghead{
+    background:var(--navy);color:#fff;padding:10px 14px;display:flex;justify-content:space-between;
+    align-items:center;cursor:pointer;font-size:13.5px;font-weight:600;
+  }
+  .gpablock .ghead .gpaval{font-family:var(--serif);font-size:15px;}
+  .gpablock .gbody{padding:12px 14px;display:none;}
+  .gpablock.open .gbody{display:block;}
+  .gpablock .ghead .chev{transition:transform 0.15s;}
+  .gpablock.open .ghead .chev{transform:rotate(90deg);}
+
+  /* ---------- Timetable ---------- */
+  table.timetable{border-collapse:collapse;width:100%;font-size:11.5px;min-width:760px;}
+  table.timetable th{background:var(--blue);color:#fff;padding:6px;font-size:10.5px;position:sticky;top:0;}
+  table.timetable td{border:1px solid var(--border);padding:0;}
+  table.timetable td.timecell{background:#F1F0EB;font-size:10px;color:var(--muted);text-align:center;padding:4px;white-space:nowrap;}
+  table.timetable input{width:100%;height:100%;border:none;padding:5px 4px;font-size:11px;background:transparent;font-family:inherit;min-height:30px;}
+
+  /* ---------- Chart ---------- */
+  .chartcard svg{width:100%;height:auto;display:block;}
+
+  /* ---------- Scale toggle ---------- */
+  .scaletoggle{display:flex;gap:8px;}
+  .scaletoggle label{
+    flex:1;border:1px solid var(--border-strong);border-radius:7px;padding:10px;text-align:center;
+    font-size:13px;cursor:pointer;color:var(--muted);
+  }
+  .scaletoggle input{display:none;}
+  .scaletoggle input:checked + span{color:var(--blue);font-weight:700;}
+  .scaletoggle label:has(input:checked){border-color:var(--blue);background:#EEF2FA;}
+
+  .footnote{font-size:11.5px;color:var(--muted);margin-top:8px;line-height:1.5;}
+  .savebar{font-size:11.5px;color:var(--green);height:16px;}
+
+  /* ---------- Auth screen ---------- */
+  #authscreen{
+    min-height:100vh;display:flex;align-items:center;justify-content:center;
+    background:radial-gradient(circle at 20% 20%, #24406F 0%, var(--navy-deep) 55%, #0F1B33 100%);
+    padding:24px 16px;
+  }
+  .authcard{
+    width:100%;max-width:400px;background:var(--card);border-radius:14px;padding:28px 26px 24px;
+    box-shadow:0 20px 60px rgba(0,0,0,0.35);
+  }
+  .authbrand{display:flex;align-items:center;gap:12px;margin-bottom:22px;}
+  .authbrand .crest{width:44px;height:44px;font-size:15px;}
+  .authbrand .t1{font-family:var(--serif);font-weight:700;font-size:17px;color:var(--navy);}
+  .authbrand .t2{font-size:11.5px;color:var(--muted);}
+  .authtabs{display:flex;border:1px solid var(--border-strong);border-radius:8px;overflow:hidden;margin-bottom:18px;}
+  .authtabs button{
+    flex:1;background:var(--paper);border:none;padding:9px 0;font-size:12.5px;font-weight:600;
+    color:var(--muted);cursor:pointer;
+  }
+  .authtabs button.active{background:var(--blue);color:#fff;}
+  .authform .field{margin-bottom:12px;}
+  .authform label{display:block;font-size:11.5px;color:var(--muted);margin-bottom:4px;}
+  .authform input{
+    width:100%;padding:10px 11px;border:1px solid var(--border-strong);border-radius:7px;
+    font-size:14px;font-family:inherit;
+  }
+  .authform input:focus{outline:2px solid var(--blue);border-color:var(--blue);}
+  .authbtn{
+    width:100%;background:var(--blue);color:#fff;border:none;padding:11px 0;border-radius:7px;
+    font-size:13.5px;font-weight:700;cursor:pointer;margin-top:4px;
+  }
+  .authbtn:hover{background:#254a86;}
+  .autherr{
+    background:var(--red-soft);color:var(--red);font-size:12px;padding:8px 10px;border-radius:6px;
+    margin-bottom:12px;display:none;
+  }
+  .autherr.show{display:block;}
+  .accountlist{margin-bottom:16px;}
+  .accountchip{
+    display:flex;align-items:center;gap:10px;width:100%;text-align:left;background:var(--paper);
+    border:1px solid var(--border);border-radius:8px;padding:9px 10px;margin-bottom:7px;cursor:pointer;
+    font-family:inherit;
+  }
+  .accountchip:hover{border-color:var(--blue);}
+  .accountchip .av{
+    width:30px;height:30px;border-radius:50%;background:var(--green);color:#fff;flex:none;
+    display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;
+  }
+  .accountchip .an{font-size:13px;font-weight:600;}
+  .accountchip .au{font-size:11px;color:var(--muted);}
+  .authswitch{font-size:12px;color:var(--muted);text-align:center;margin-top:14px;}
+  .authswitch button{background:none;border:none;color:var(--blue);font-weight:700;cursor:pointer;padding:0;font-size:12px;}
+  .authnote{font-size:10.5px;color:var(--muted);line-height:1.5;margin-top:16px;border-top:1px solid var(--border);padding-top:12px;}
+
+  .userbar{
+    display:flex;align-items:center;gap:9px;padding:12px 14px;border-top:1px solid rgba(255,255,255,0.09);
+  }
+  .userbar .av{
+    width:28px;height:28px;border-radius:50%;background:var(--blue);color:#fff;flex:none;
+    display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;
+  }
+  .userbar .un{font-size:12.5px;color:#EDEFF4;font-weight:600;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .userbar button{
+    background:none;border:1px solid rgba(255,255,255,0.25);color:#D7DCE8;font-size:10.5px;
+    padding:5px 9px;border-radius:6px;cursor:pointer;flex:none;
+  }
+  .userbar button:hover{background:rgba(255,255,255,0.1);}
+
+
+  /* ---------- Responsive ---------- */
+  @media (max-width:860px){
+    #sidebar{display:none;}
+    #mobiletabs{
+      display:flex;overflow-x:auto;gap:4px;padding:8px 10px;background:var(--navy-deep);
+      position:sticky;top:0;z-index:6;-webkit-overflow-scrolling:touch;
+    }
+    #mobiletabs button{
+      flex:none;background:rgba(255,255,255,0.07);border:none;color:#D7DCE8;
+      padding:7px 12px;border-radius:20px;font-size:12px;white-space:nowrap;
+    }
+    #mobiletabs button.active{background:var(--blue);color:#fff;font-weight:700;}
+    #content{padding:16px 14px 60px;}
+    .kpis{grid-template-columns:repeat(2,1fr);}
+    .fgrid{grid-template-columns:1fr;}
+    #topbar{padding:12px 14px;}
+  }
+</style>
+</head>
+<body>
+<div id="authscreen" style="display:none;">
+  <div class="authcard">
+    <div class="authbrand">
+      <div class="crest">NG</div>
+      <div><div class="t1">Academic Survival Dashboard</div><div class="t2">Sign in to your local profile</div></div>
+    </div>
+    <div class="authtabs">
+      <button id="tabSignin" class="active" onclick="setAuthMode('signin')">Sign in</button>
+      <button id="tabCreate" onclick="setAuthMode('create')">Create account</button>
+    </div>
+    <div id="autherr" class="autherr"></div>
+    <div id="authbody"></div>
+    <div class="authnote">Accounts and data live only in this browser, on this device - nothing is sent to a server. A PIN just keeps other people on this device out of your data; it isn't bank-grade security, so don't reuse a real password.</div>
+  </div>
+</div>
+
+<div id="shell" style="display:none;">
+  <aside id="sidebar">
+    <div class="brand">
+      <div class="crest">NG</div>
+      <div class="brand-text">
+        <div class="t1">Academic Survival</div>
+        <div class="t2">Dashboard</div>
+      </div>
+    </div>
+    <nav class="navgroups" id="navgroups"></nav>
+    <div style="padding:0 14px 8px;">
+      <button id="installBtn" onclick="installApp()" style="display:none;width:100%;background:var(--green);color:#fff;border:none;padding:8px 0;border-radius:7px;font-size:12px;font-weight:700;cursor:pointer;">Install app</button>
+    </div>
+    <div class="userbar">
+      <div class="av" id="userAvatar">?</div>
+      <div class="un" id="userName">-</div>
+      <button onclick="logout()">Log out</button>
+    </div>
+  </aside>
+
+
+  <div id="main">
+    <div id="mobiletabs"></div>
+    <div id="topbar">
+      <div>
+        <h1 id="pagetitle">Dashboard</h1>
+        <div class="sub" id="pagesub"></div>
+      </div>
+      <div class="savebar" id="savebar"></div>
+    </div>
+    <div id="content"></div>
+  </div>
+</div>
+<input type="file" id="importFile" accept="application/json,.json" style="display:none;" onchange="handleImportFile(this)">
+
+<script>
+/* ============================================================
+   Academic Survival Dashboard - app logic
+   ============================================================ */
+
+const LEVELS = [100, 200, 300, 400, 500];
+const SEMS = ['First', 'Second'];
+const N_BLOCKS = LEVELS.length * SEMS.length;
+
+function blockLevel(i){ return LEVELS[Math.floor(i / 2)]; }
+function blockSem(i){ return SEMS[i % 2]; }
+function blockLabel(i){ return blockLevel(i) + 'L ' + blockSem(i); }
+
+const GRADE_POINTS = {
+  '5': { A: 5, B: 4, C: 3, D: 2, E: 1, F: 0 },
+  '4': { A: 4, B: 3, C: 2, D: 1, F: 0 }
+};
+function gradesForScale(scale){ return Object.keys(GRADE_POINTS[scale]); }
+function gradePoint(grade, scale){
+  const t = GRADE_POINTS[scale] || GRADE_POINTS['5'];
+  return (grade && t[grade] !== undefined) ? t[grade] : null;
+}
+function degreeClass(cgpa, scale){
+  if (cgpa === null || isNaN(cgpa)) return '\u2014';
+  if (scale === '4'){
+    if (cgpa >= 3.60) return 'First Class';
+    if (cgpa >= 3.00) return 'Second Class Upper';
+    if (cgpa >= 2.00) return 'Second Class Lower';
+    if (cgpa >= 1.00) return 'Third Class';
+    if (cgpa >= 0.75) return 'Pass';
+    return 'Below pass mark';
+  }
+  if (cgpa >= 4.50) return 'First Class';
+  if (cgpa >= 3.50) return 'Second Class Upper';
+  if (cgpa >= 2.40) return 'Second Class Lower';
+  if (cgpa >= 1.50) return 'Third Class';
+  if (cgpa >= 1.00) return 'Pass';
+  return 'Below pass mark';
+}
+const DEGREE_TABLE = {
+  '5': [['First Class','4.50 - 5.00'],['Second Class Upper','3.50 - 4.49'],['Second Class Lower','2.40 - 3.49'],['Third Class','1.50 - 2.39'],['Pass','1.00 - 1.49']],
+  '4': [['First Class','3.60 - 4.00'],['Second Class Upper','3.00 - 3.59'],['Second Class Lower','2.00 - 2.99'],['Third Class','1.00 - 1.99'],['Pass','0.75 - 0.99']]
+};
+const SCORE_RANGES = { A:'70 - 100', B:'60 - 69', C:'50 - 59', D:'45 - 49', E:'40 - 44 (5-Point only)', F:'0 - 39' };
+
+const FYP_MILESTONES = [
+  'Topic Selection & Approval','Proposal Defense / Seminar 1','Literature Review (Ch. 1 & 2)',
+  'Methodology (Chapter 3)','Data Collection / Implementation','Chapter 4 - Results & Analysis',
+  'Chapter 5 - Summary & Conclusion','Draft Submission to Supervisor','Corrections from Supervisor',
+  'Internal Defense / Seminar 2','External Defense / Viva Voce','Final Corrections','Binding & Submission'
+];
+
+const TIME_SLOTS = ['7-8am','8-9am','9-10am','10-11am','11am-12pm','12-1pm','1-2pm','2-3pm','3-4pm','4-5pm','5-6pm','6-7pm','7-8pm','8-9pm','9-10pm'];
+const DAYS = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+
+function uid(){ return Math.random().toString(36).slice(2, 9); }
+function todayISO(){ return new Date().toISOString().slice(0, 10); }
+function daysBetween(dateISO){
+  if (!dateISO) return null;
+  const d = new Date(dateISO + 'T00:00:00');
+  const t = new Date(todayISO() + 'T00:00:00');
+  return Math.round((d - t) / 86400000);
+}
+function esc(s){
+  return String(s === undefined || s === null ? '' : s)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function fmt2(n){ return (n === null || n === undefined || isNaN(n)) ? '' : (Math.round(n * 100) / 100).toFixed(2); }
+function fmt1(n){ return (n === null || n === undefined || isNaN(n)) ? '' : (Math.round(n * 10) / 10).toFixed(1); }
+function pct(n){ return (n === null || n === undefined || isNaN(n)) ? '' : (Math.round(n * 1000) / 10) + '%'; }
+
+/* ------------------------------------------------------------
+   Default state / sample data
+   ------------------------------------------------------------ */
+function defaultSettings(){
+  return {
+    scale: '5', name: '', matric: '', institution: '', faculty: '', department: '',
+    level: '100', session: '2025/2026', currentBlock: 0
+  };
+}
+function sampleGpaBlocks(){
+  const blocks = [];
+  for (let i = 0; i < N_BLOCKS; i++){
+    if (i === 0){
+      blocks.push({ courses: [
+        { id: uid(), code: 'GST101', title: 'Use of English I', units: 2, grade: 'B' },
+        { id: uid(), code: 'MTH101', title: 'Elementary Mathematics I', units: 3, grade: 'A' },
+        { id: uid(), code: 'PHY101', title: 'General Physics I', units: 3, grade: 'C' },
+        { id: uid(), code: 'CHM101', title: 'General Chemistry I', units: 2, grade: 'B' },
+        { id: uid(), code: 'CSC101', title: 'Introduction to Computer Science', units: 3, grade: 'A' }
+      ]});
+    } else {
+      blocks.push({ courses: [] });
+    }
+  }
+  return blocks;
+}
+function emptyCourseRow(){ return { id: uid(), session: '', level: '100', semester: 'First', code: '', title: '', units: '', type: 'Core', lecturer: '', status: 'Registered' }; }
+function emptyAssignmentRow(){ return { id: uid(), course: '', title: '', given: '', due: '', submitted: '', score: '', max: '' }; }
+function emptyTestRow(){ return { id: uid(), course: '', type: 'CA Test 1', date: '', score: '', max: '', weight: '' }; }
+function emptyAttendanceRow(){ return { id: uid(), course: '', held: '', attended: '' }; }
+function emptyDeadlineRow(){ return { id: uid(), due: '', task: '', category: '', priority: 'Medium' }; }
+function emptyCarryoverRow(){ return { id: uid(), code: '', title: '', units: '', failedIn: '', grade: 'F', retakeIn: '', newGrade: '' }; }
+function emptySiwesRow(week){ return { id: uid(), week: week, from: '', to: '', dept: '', tasks: '', skills: '', hours: '', signed: '' }; }
+function defaultFyp(){ return FYP_MILESTONES.map(() => ({ planned: '', actual: '', remarks: '' })); }
+function defaultGoals(){ return { targetCGPA: 4.5, targetClass: 'First Class', estUnits: 18, semestersRemaining: 4, personal: [] }; }
+function defaultTimetable(){ return TIME_SLOTS.map(() => DAYS.map(() => '')); }
+
+/* ------------------------------------------------------------
+   State + storage
+   ------------------------------------------------------------ */
+const STORAGE_KEYS = ['settings','courses','gpaBlocks','assignments','tests','attendance','deadlines','timetable','carryover','siwes','fyp','goals'];
+function freshState(){
+  return {
+    settings: defaultSettings(),
+    courses: [ ],
+    gpaBlocks: sampleGpaBlocks(),
+    assignments: [ emptyAssignmentRow() ],
+    tests: [ emptyTestRow() ],
+    attendance: [ emptyAttendanceRow() ],
+    deadlines: [ emptyDeadlineRow() ],
+    timetable: defaultTimetable(),
+    carryover: [ emptyCarryoverRow() ],
+    siwes: [0,1,2,3].map(w => emptySiwesRow(w + 1)),
+    fyp: defaultFyp(),
+    goals: defaultGoals()
+  };
+}
+let state = freshState();
+
+/* ------------------------------------------------------------
+   Storage adapter - uses the Claude.ai artifact storage API when
+   available (window.storage), and falls back to this browser's
+   localStorage when the file is opened standalone / hosted elsewhere.
+   Nothing here ever leaves the device: no server, no network call.
+   ------------------------------------------------------------ */
+const Store = {
+  cloud: (typeof window !== 'undefined' && !!window.storage),
+  async get(key){
+    if (this.cloud){
+      try { const r = await window.storage.get(key, false); return (r && r.value !== undefined) ? r.value : null; }
+      catch (e) { return null; }
+    }
+    try { return localStorage.getItem(key); } catch (e) { return null; }
+  },
+  async set(key, value){
+    if (this.cloud){
+      try { await window.storage.set(key, value, false); return true; } catch (e) { return false; }
+    }
+    try { localStorage.setItem(key, value); return true; } catch (e) { return false; }
+  },
+  async remove(key){
+    if (this.cloud){ try { await window.storage.delete(key, false); } catch (e) { /* ignore */ } return; }
+    try { localStorage.removeItem(key); } catch (e) { /* ignore */ }
+  }
+};
+
+/* ------------------------------------------------------------
+   Local accounts (device-only - see auth note in the UI)
+   ------------------------------------------------------------ */
+const REGISTRY_KEY = '__accounts__';
+const SESSION_KEY = '__session__';
+let currentUser = null;
+
+function userKey(key){ return 'u:' + currentUser + ':' + key; }
+
+async function loadRegistry(){
+  const raw = await Store.get(REGISTRY_KEY);
+  if (!raw) return {};
+  try { return JSON.parse(raw) || {}; } catch (e) { return {}; }
+}
+async function saveRegistry(reg){ await Store.set(REGISTRY_KEY, JSON.stringify(reg)); }
+async function getSession(){
+  const raw = await Store.get(SESSION_KEY);
+  if (!raw) return null;
+  try { return JSON.parse(raw); } catch (e) { return null; }
+}
+async function setSession(username){ await Store.set(SESSION_KEY, JSON.stringify({ username: username, at: new Date().toISOString() })); }
+async function clearSession(){ await Store.remove(SESSION_KEY); }
+
+function randomSaltHex(){
+  try {
+    const arr = crypto.getRandomValues(new Uint8Array(16));
+    return Array.from(arr).map(b => b.toString(16).padStart(2, '0')).join('');
+  } catch (e) {
+    let s = ''; for (let i = 0; i < 32; i++) s += Math.floor(Math.random() * 16).toString(16);
+    return s;
+  }
+}
+async function hashPassword(password, salt){
+  const input = salt + ':' + password;
+  try {
+    if (window.crypto && crypto.subtle && crypto.subtle.digest){
+      const enc = new TextEncoder().encode(input);
+      const digest = await crypto.subtle.digest('SHA-256', enc);
+      return Array.from(new Uint8Array(digest)).map(b => b.toString(16).padStart(2, '0')).join('');
+    }
+  } catch (e) { /* fall through to weak hash below */ }
+  let h = 0;
+  for (let i = 0; i < input.length; i++){ h = ((h << 5) - h) + input.charCodeAt(i); h |= 0; }
+  return 'w' + Math.abs(h).toString(16);
+}
+
+async function createAccount(usernameRaw, displayNameRaw, password, confirm){
+  const username = (usernameRaw || '').trim().toLowerCase().replace(/\s+/g, '');
+  const displayName = (displayNameRaw || '').trim();
+  if (!username) return 'Choose a username.';
+  if (!/^[a-z0-9_.-]{3,20}$/.test(username)) return 'Username should be 3-20 characters: letters, numbers, . _ -';
+  if (!password || password.length < 4) return 'Password should be at least 4 characters.';
+  if (password !== confirm) return 'Passwords do not match.';
+  const reg = await loadRegistry();
+  if (reg[username]) return 'That username is already taken on this device.';
+  const salt = randomSaltHex();
+  const hash = await hashPassword(password, salt);
+  reg[username] = { salt: salt, hash: hash, displayName: displayName || username, createdAt: new Date().toISOString() };
+  await saveRegistry(reg);
+  await enterAs(username);
+  return null;
+}
+async function signIn(usernameRaw, password){
+  const username = (usernameRaw || '').trim().toLowerCase().replace(/\s+/g, '');
+  const reg = await loadRegistry();
+  const rec = reg[username];
+  if (!rec) return 'No account with that username on this device.';
+  const hash = await hashPassword(password, rec.salt);
+  if (hash !== rec.hash) return 'Incorrect password.';
+  await enterAs(username);
+  return null;
+}
+async function enterAs(username){
+  currentUser = username;
+  await setSession(username);
+  state = freshState();
+  await loadAll();
+  await showApp();
+}
+async function showApp(){
+  document.getElementById('authscreen').style.display = 'none';
+  document.getElementById('shell').style.display = 'flex';
+  const reg = await loadRegistry();
+  const rec = reg[currentUser] || {};
+  const dn = rec.displayName || currentUser;
+  document.getElementById('userAvatar').textContent = (dn[0] || '?').toUpperCase();
+  document.getElementById('userName').textContent = dn;
+  buildNav();
+  switchTab('dashboard');
+}
+async function logout(){
+  await clearSession();
+  currentUser = null;
+  state = freshState();
+  document.getElementById('shell').style.display = 'none';
+  document.getElementById('authscreen').style.display = 'flex';
+  setAuthMode('signin');
+}
+async function deleteAccount(){
+  if (!confirm('Delete your account and everything in it, on this device? This cannot be undone.')) return;
+  if (!confirm('Really delete it? This is your last chance to cancel.')) return;
+  await Promise.all(STORAGE_KEYS.map(k => Store.remove(userKey(k))));
+  const reg = await loadRegistry();
+  delete reg[currentUser];
+  await saveRegistry(reg);
+  await clearSession();
+  currentUser = null;
+  state = freshState();
+  document.getElementById('shell').style.display = 'none';
+  document.getElementById('authscreen').style.display = 'flex';
+  setAuthMode('signin');
+}
+
+function exportData(){
+  const payload = { app: 'academic-survival-dashboard', version: 1, username: currentUser, exportedAt: new Date().toISOString(), data: state };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'academic-dashboard-' + currentUser + '-' + todayISO() + '.json';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 3000);
+}
+function triggerImport(){ const el = document.getElementById('importFile'); if (el) el.click(); }
+async function handleImportFile(input){
+  const file = input.files && input.files[0];
+  if (!file) return;
+  try {
+    const text = await file.text();
+    const payload = JSON.parse(text);
+    const data = (payload && payload.data) ? payload.data : payload;
+    STORAGE_KEYS.forEach(k => { if (data[k] !== undefined) state[k] = data[k]; });
+    STORAGE_KEYS.forEach(k => scheduleSave(k));
+    renderCurrentPane();
+    alert('Data imported into your account.');
+  } catch (e) {
+    alert('Could not read that file - make sure it is a dashboard export (.json).');
+  }
+  input.value = '';
+}
+
+/* ------------------------------------------------------------
+   Auth screen
+   ------------------------------------------------------------ */
+let authMode = 'signin';
+function setAuthMode(mode){
+  authMode = mode;
+  document.getElementById('tabSignin').classList.toggle('active', mode === 'signin');
+  document.getElementById('tabCreate').classList.toggle('active', mode === 'create');
+  const err = document.getElementById('autherr');
+  err.classList.remove('show'); err.textContent = '';
+  if (mode === 'signin') renderSigninForm(); else renderCreateForm();
+}
+async function renderSigninForm(){
+  const reg = await loadRegistry();
+  const usernames = Object.keys(reg);
+  let html = '';
+  if (usernames.length){
+    html += '<div class="accountlist">' + usernames.map(u => {
+      const r = reg[u]; const dn = r.displayName || u;
+      return '<button type="button" class="accountchip" onclick="prefillUser(\'' + u + '\')"><span class="av">' + esc((dn[0] || '?').toUpperCase()) + '</span><span><div class="an">' + esc(dn) + '</div><div class="au">@' + esc(u) + '</div></span></button>';
+    }).join('') + '</div>';
+  }
+  html += '<form class="authform" onsubmit="return submitSignin(event)">' +
+    '<div class="field"><label>Username</label><input id="siUser" autocomplete="username" required></div>' +
+    '<div class="field"><label>Password</label><input id="siPass" type="password" autocomplete="current-password" required></div>' +
+    '<button class="authbtn" type="submit">Sign in</button></form>' +
+    '<div class="authswitch">New here? <button type="button" onclick="setAuthMode(\'create\')">Create an account</button></div>';
+  document.getElementById('authbody').innerHTML = html;
+}
+function renderCreateForm(){
+  const html = '<form class="authform" onsubmit="return submitCreate(event)">' +
+    '<div class="field"><label>Display name</label><input id="caName" autocomplete="name" placeholder="e.g. Chiamaka"></div>' +
+    '<div class="field"><label>Username</label><input id="caUser" autocomplete="username" required placeholder="e.g. chiamaka20"></div>' +
+    '<div class="field"><label>Password</label><input id="caPass" type="password" autocomplete="new-password" required></div>' +
+    '<div class="field"><label>Confirm password</label><input id="caPass2" type="password" autocomplete="new-password" required></div>' +
+    '<button class="authbtn" type="submit">Create account</button></form>' +
+    '<div class="authswitch">Already have an account? <button type="button" onclick="setAuthMode(\'signin\')">Sign in</button></div>';
+  document.getElementById('authbody').innerHTML = html;
+}
+function prefillUser(u){
+  setAuthMode('signin');
+  setTimeout(() => {
+    const el = document.getElementById('siUser');
+    if (el){ el.value = u; document.getElementById('siPass').focus(); }
+  }, 0);
+}
+async function submitSignin(e){
+  e.preventDefault();
+  const u = document.getElementById('siUser').value;
+  const p = document.getElementById('siPass').value;
+  const err = await signIn(u, p);
+  if (err) showAuthErr(err);
+  return false;
+}
+async function submitCreate(e){
+  e.preventDefault();
+  const dn = document.getElementById('caName').value;
+  const u = document.getElementById('caUser').value;
+  const p = document.getElementById('caPass').value;
+  const p2 = document.getElementById('caPass2').value;
+  const err = await createAccount(u, dn, p, p2);
+  if (err) showAuthErr(err);
+  return false;
+}
+function showAuthErr(msg){
+  const el = document.getElementById('autherr');
+  el.textContent = msg;
+  el.classList.add('show');
+}
+
+const saveTimers = {};
+function scheduleSave(key){
+  const bar = document.getElementById('savebar');
+  if (bar) bar.textContent = 'Saving...';
+  clearTimeout(saveTimers[key]);
+  saveTimers[key] = setTimeout(async () => {
+    const ok = await Store.set(userKey(key), JSON.stringify(state[key]));
+    if (bar) {
+      bar.textContent = ok ? 'Saved' : 'Save failed - changes kept in this tab only';
+      if (ok) setTimeout(() => { if (bar.textContent === 'Saved') bar.textContent = ''; }, 1200);
+    }
+  }, 500);
+}
+
+async function loadAll(){
+  await Promise.all(STORAGE_KEYS.map(async key => {
+    const raw = await Store.get(userKey(key));
+    if (raw){
+      try { const parsed = JSON.parse(raw); if (parsed !== null && parsed !== undefined) state[key] = parsed; }
+      catch (e) { /* ignore corrupt entry, keep default */ }
+    }
+  }));
+}
+
+/* ------------------------------------------------------------
+   Derived / computed values
+   ------------------------------------------------------------ */
+function blockTotals(block, scale){
+  let units = 0, qp = 0;
+  (block.courses || []).forEach(c => {
+    const u = parseFloat(c.units);
+    const gp = gradePoint(c.grade, scale);
+    if (!isNaN(u) && gp !== null){ units += u; qp += u * gp; }
+  });
+  const gpa = units > 0 ? qp / units : null;
+  return { units, qp, gpa };
+}
+function allBlockTotals(){
+  const scale = state.settings.scale;
+  return state.gpaBlocks.map(b => blockTotals(b, scale));
+}
+function cumulativeSeries(){
+  const totals = allBlockTotals();
+  let cu = 0, cq = 0;
+  return totals.map(t => {
+    cu += t.units; cq += t.qp;
+    return { ...t, cu, cq, cgpa: cu > 0 ? cq / cu : null };
+  });
+}
+function computeCGPA(){
+  const totals = allBlockTotals();
+  const cu = totals.reduce((s,t) => s + t.units, 0);
+  const cq = totals.reduce((s,t) => s + t.qp, 0);
+  return { units: cu, qp: cq, cgpa: cu > 0 ? cq / cu : null };
+}
+
+/* ------------------------------------------------------------
+   Generic editable table renderer
+   sec      : state key, e.g. 'courses'
+   columns  : [{key,label,type:'text'|'number'|'date'|'select'|'computed',options,width}]
+   rows     : array (state[sec])
+   ------------------------------------------------------------ */
+function renderEditableTable(sec, columns, rows, opts){
+  opts = opts || {};
+  let html = '<div class="tablewrap"><table class="data"><thead><tr>';
+  columns.forEach(c => { html += '<th>' + esc(c.label) + '</th>'; });
+  if (!opts.noDelete) html += '<th></th>';
+  html += '</tr></thead><tbody>';
+  rows.forEach((row, i) => {
+    html += '<tr>';
+    columns.forEach(col => {
+      if (col.type === 'computed'){
+        const val = col.compute ? col.compute(row, i) : '';
+        html += '<td class="readonly' + (col.num ? ' num' : '') + '">' + val + '</td>';
+      } else if (col.type === 'select'){
+        html += '<td><select data-sec="' + sec + '" data-i="' + i + '" data-f="' + col.key + '" onchange="onFieldChange(this)">';
+        (col.options || []).forEach(opt => {
+          const v = typeof opt === 'object' ? opt.v : opt;
+          const l = typeof opt === 'object' ? opt.l : opt;
+          html += '<option value="' + esc(v) + '"' + (String(row[col.key] || '') === String(v) ? ' selected' : '') + '>' + esc(l) + '</option>';
+        });
+        html += '</select></td>';
+      } else {
+        const type = col.type === 'number' ? 'number' : (col.type === 'date' ? 'date' : 'text');
+        html += '<td class="' + (type === 'number' ? 'num' : '') + '"><input type="' + type + '" data-sec="' + sec + '" data-i="' + i + '" data-f="' + col.key + '" value="' + esc(row[col.key]) + '" oninput="onFieldChange(this)"></td>';
+      }
+    });
+    if (!opts.noDelete) html += '<td><button class="rowdel" title="Delete row" onclick="deleteRow(\'' + sec + '\',' + i + ')">\u2715</button></td>';
+    html += '</tr>';
+  });
+  html += '</tbody></table></div>';
+  return html;
+}
+
+function resolveRows(sec){
+  const parts = sec.split('.');
+  if (parts[0] === 'gpaBlocks'){
+    const idx = parseInt(parts[1], 10);
+    return state.gpaBlocks[idx].courses;
+  }
+  if (parts[0] === 'goals'){
+    return state.goals[parts[1]];
+  }
+  return state[sec];
+}
+function topKeyOf(sec){ return sec.split('.')[0]; }
+
+function onFieldChange(el){
+  const sec = el.dataset.sec, i = parseInt(el.dataset.i, 10), f = el.dataset.f;
+  const selStart = el.selectionStart, selEnd = el.selectionEnd, tag = el.tagName;
+  const rows = resolveRows(sec);
+  rows[i][f] = el.value;
+  scheduleSave(topKeyOf(sec));
+  const focusKey = { sec, i, f, selStart, selEnd, tag };
+  renderCurrentPane(focusKey);
+}
+function deleteRow(sec, i){
+  const rows = resolveRows(sec);
+  rows.splice(i, 1);
+  scheduleSave(topKeyOf(sec));
+  renderCurrentPane();
+}
+function addRow(sec, factory){
+  state[sec].push(factory());
+  scheduleSave(sec);
+  renderCurrentPane();
+  setTimeout(() => {
+    const inputs = document.querySelectorAll('[data-sec="' + sec + '"]');
+    if (inputs.length) inputs[inputs.length - 1].scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }, 30);
+}
+
+function restoreFocus(focusKey){
+  if (!focusKey) return;
+  const el = document.querySelector('[data-sec="' + focusKey.sec + '"][data-i="' + focusKey.i + '"][data-f="' + focusKey.f + '"]');
+  if (el){
+    el.focus();
+    if (focusKey.tag === 'INPUT' && el.setSelectionRange && typeof focusKey.selStart === 'number'){
+      try { el.setSelectionRange(focusKey.selStart, focusKey.selEnd); } catch (e) { /* ignore */ }
+    }
+  }
+}
+
+function badge(text, kind){ return '<span class="badge ' + kind + '">' + esc(text) + '</span>'; }
+
+/* ------------------------------------------------------------
+   Tab renderers
+   ------------------------------------------------------------ */
+function renderDashboard(){
+  const s = state.settings;
+  const cg = computeCGPA();
+  const totals = allBlockTotals();
+  const curBlock = totals[s.currentBlock] || { units: 0, gpa: null };
+  const degree = degreeClass(cg.cgpa, s.scale);
+
+  const overdueDl = state.deadlines.filter(d => d.due && daysBetween(d.due) < 0).length;
+  const soonDl = state.deadlines.filter(d => d.due && daysBetween(d.due) >= 0 && daysBetween(d.due) <= 3).length;
+  const openCarry = state.carryover.filter(c => c.code && !(c.newGrade && c.newGrade !== 'F')).length;
+  const attRows = state.attendance.filter(a => parseFloat(a.held) > 0);
+  const avgAtt = attRows.length ? attRows.reduce((s2,a) => s2 + (parseFloat(a.attended) / parseFloat(a.held)), 0) / attRows.length : null;
+  const pendingAsg = state.assignments.filter(a => a.due && a.submitted !== 'Y').length;
+  const fypDone = state.fyp.filter(m => m.actual).length;
+
+  let html = '<div class="kpis">';
+  html += kpiTile('Current CGPA', cg.cgpa !== null ? fmt2(cg.cgpa) : '\u2014', 'navy');
+  html += kpiTile('This semester GPA (' + blockLabel(Number(s.currentBlock)) + ')', curBlock.gpa !== null ? fmt2(curBlock.gpa) : '\u2014', 'blue');
+  html += kpiTile('Total units completed', String(cg.units), 'green');
+  html += kpiTile('Projected class of degree', degree, 'amber', true);
+  html += '</div><div class="kpis">';
+  html += kpiTile('Overdue deadlines', String(overdueDl), overdueDl > 0 ? 'red' : 'green');
+  html += kpiTile('Due within 3 days', String(soonDl), soonDl > 0 ? 'amber' : 'green');
+  html += kpiTile('Open carryovers', String(openCarry), openCarry > 0 ? 'red' : 'green');
+  html += kpiTile('Average attendance', avgAtt !== null ? pct(avgAtt) : '\u2014', 'ink');
+  html += '</div><div class="kpis">';
+  html += kpiTile('Assignments pending', String(pendingAsg), pendingAsg > 0 ? 'amber' : 'green');
+  html += kpiTile('FYP milestones done', fypDone + ' / ' + FYP_MILESTONES.length, 'blue');
+  html += kpiTile('Target CGPA gap', (state.goals.targetCGPA !== '' && cg.cgpa !== null) ? fmt2(state.goals.targetCGPA - cg.cgpa) : '\u2014', 'navy');
+  html += kpiTile('Grading scale', s.scale === '5' ? '5-Point' : '4-Point', 'green');
+  html += '</div>';
+
+  html += '<div class="card"><h3>Student</h3><div class="fgrid">';
+  html += infoLine('Name', s.name); html += infoLine('Matric No.', s.matric);
+  html += infoLine('Institution', s.institution); html += infoLine('Department', s.department);
+  html += infoLine('Level', s.level); html += infoLine('Session', s.session);
+  html += '</div><p class="footnote">Change the current semester in Settings to move the "This semester GPA" card above.</p></div>';
+  return html;
+}
+function infoLine(label, val){
+  return '<div class="field"><label>' + esc(label) + '</label><div>' + (esc(val) || '<span style="color:var(--muted)">not set</span>') + '</div></div>';
+}
+function kpiTile(label, value, color, small){
+  return '<div class="kpi ' + color + '"><div class="label">' + esc(label) + '</div><div class="value' + (small ? ' small' : '') + '">' + esc(value) + '</div></div>';
+}
+
+function renderSettings(){
+  const s = state.settings;
+  let html = '<div class="card"><h3>Grading scale</h3><div class="scaletoggle">';
+  ['5','4'].forEach(v => {
+    html += '<label><input type="radio" name="scale" value="' + v + '"' + (s.scale === v ? ' checked' : '') + ' onchange="onSettingsChange(\'scale\', this.value)"><span>' + v + '-Point Scale</span></label>';
+  });
+  html += '</div><p class="footnote">Most Nigerian public universities (UI, UNILAG, OAU, ABU, UNN, UNIBEN and others) use the 5-Point scale.</p>';
+  html += '<div class="tablewrap"><table class="data"><thead><tr><th>Grade</th><th>Score range</th><th>Active points</th></tr></thead><tbody>';
+  gradesForScale(s.scale).forEach(g => {
+    html += '<tr><td>' + g + '</td><td>' + SCORE_RANGES[g] + '</td><td>' + fmt1(gradePoint(g, s.scale)) + '</td></tr>';
+  });
+  html += '</tbody></table></div></div>';
+
+  html += '<div class="card"><h3>Student information</h3><div class="fgrid">';
+  html += settingsField('name', 'Full name', 'text');
+  html += settingsField('matric', 'Matric number', 'text');
+  html += settingsField('institution', 'Institution', 'text');
+  html += settingsField('faculty', 'Faculty', 'text');
+  html += settingsField('department', 'Department', 'text');
+  html += settingsField('session', 'Current session', 'text');
+  html += '<div class="field"><label>Current level</label><select onchange="onSettingsChange(\'level\', this.value)">' +
+    LEVELS.map(l => '<option value="' + l + '"' + (s.level == l ? ' selected' : '') + '>' + l + '</option>').join('') + '</select></div>';
+  html += '<div class="field"><label>Current semester (drives dashboard card)</label><select onchange="onSettingsChange(\'currentBlock\', this.value)">' +
+    Array.from({length: N_BLOCKS}, (_, i) => '<option value="' + i + '"' + (Number(s.currentBlock) === i ? ' selected' : '') + '>' + blockLabel(i) + '</option>').join('') + '</select></div>';
+  html += '</div></div>';
+
+  html += '<div class="card"><h3>Class of degree reference</h3><div class="tablewrap"><table class="data"><thead><tr><th>Class</th><th>5-Point CGPA</th><th>4-Point CGPA</th></tr></thead><tbody>';
+  DEGREE_TABLE['5'].forEach((row, i) => {
+    html += '<tr><td>' + row[0] + '</td><td>' + row[1] + '</td><td>' + DEGREE_TABLE['4'][i][1] + '</td></tr>';
+  });
+  html += '</tbody></table></div><p class="footnote">Boundaries vary slightly by institution - confirm yours in your student handbook.</p></div>';
+
+  html += '<div class="card"><h3>Your account</h3><p class="footnote" style="margin-top:0;">Signed in as <b>' + esc(currentUser) + '</b>. Everything you enter is stored only in this browser, on this device.</p>' +
+    '<div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px;">' +
+    '<button class="addrow" onclick="exportData()">Export my data (.json)</button>' +
+    '<button class="addrow" onclick="triggerImport()">Import data</button>' +
+    '<button class="addrow" style="border-color:var(--red);color:var(--red);" onclick="deleteAccount()">Delete my account</button>' +
+    '</div><p class="footnote">Use Export before switching devices or browsers - there is no cloud sync, so an exported file is the only way to move your data.</p></div>';
+  return html;
+}
+function settingsField(key, label, type){
+  return '<div class="field"><label>' + esc(label) + '</label><input type="' + type + '" value="' + esc(state.settings[key]) + '" oninput="onSettingsChange(\'' + key + '\', this.value)"></div>';
+}
+function onSettingsChange(key, value){
+  state.settings[key] = value;
+  scheduleSave('settings');
+  renderCurrentPane();
+}
+
+function renderCourses(){
+  const cols = [
+    { key:'session', label:'Session', type:'text' },
+    { key:'level', label:'Level', type:'select', options:LEVELS.map(String) },
+    { key:'semester', label:'Semester', type:'select', options:SEMS },
+    { key:'code', label:'Code', type:'text' },
+    { key:'title', label:'Course title', type:'text' },
+    { key:'units', label:'Units', type:'number' },
+    { key:'type', label:'Core/Elective', type:'select', options:['Core','Elective'] },
+    { key:'lecturer', label:'Lecturer', type:'text' },
+    { key:'status', label:'Status', type:'select', options:['Registered','Not Registered'] }
+  ];
+  let html = renderEditableTable('courses', cols, state.courses);
+  html += '<button class="addrow" onclick="addRow(\'courses\', emptyCourseRow)">+ Add course</button>';
+  return html;
+}
+
+function renderGPA(){
+  const s = state.settings;
+  const totals = allBlockTotals();
+  let html = '<p class="section-sub">Tap a semester to expand it. Grade Point and Quality Points calculate automatically from the grade you pick.</p>';
+  for (let b = 0; b < N_BLOCKS; b++){
+    const block = state.gpaBlocks[b];
+    const t = totals[b];
+    const open = openBlocks.has(b);
+    html += '<div class="gpablock' + (open ? ' open' : '') + '"><div class="ghead" onclick="toggleBlock(' + b + ')">' +
+      '<span><span class="chev">\u25B8</span> ' + blockLabel(b) + '</span>' +
+      '<span class="gpaval">' + (t.units > 0 ? (t.units + ' units &middot; GPA ' + fmt2(t.gpa)) : 'no courses yet') + '</span></div>';
+    html += '<div class="gbody">';
+    const cols = [
+      { key:'code', label:'Code', type:'text' },
+      { key:'title', label:'Course title', type:'text' },
+      { key:'units', label:'Units', type:'number' },
+      { key:'grade', label:'Grade', type:'select', options: gradesForScale(s.scale) },
+      { key:'gp', label:'Grade point', type:'computed', num:true, compute: r => { const gp = gradePoint(r.grade, s.scale); return gp === null ? '' : fmt1(gp); } },
+      { key:'qp', label:'Quality points', type:'computed', num:true, compute: r => { const gp = gradePoint(r.grade, s.scale); const u = parseFloat(r.units); return (gp === null || isNaN(u)) ? '' : fmt1(gp * u); } }
+    ];
+    html += renderEditableTable('gpaBlocks.' + b + '.courses', cols, block.courses);
+    html += '<button class="addrow" onclick="addGpaCourse(' + b + ')">+ Add course</button>';
+    html += '</div></div>';
+  }
+  return html;
+}
+let openBlocks = new Set([0]);
+function toggleBlock(b){
+  if (openBlocks.has(b)) openBlocks.delete(b); else openBlocks.add(b);
+  renderCurrentPane();
+}
+function addGpaCourse(b){
+  state.gpaBlocks[b].courses.push({ id: uid(), code:'', title:'', units:'', grade:'' });
+  scheduleSave('gpaBlocks');
+  renderCurrentPane();
+}
+
+function renderCGPA(){
+  const s = state.settings;
+  const series = cumulativeSeries();
+  const cg = computeCGPA();
+  let html = '<div class="tablewrap"><table class="data"><thead><tr><th>Semester</th><th>Sem. units</th><th>Sem. quality pts</th><th>Sem. GPA</th><th>Cumulative units</th><th>Cumulative quality pts</th><th>Running CGPA</th></tr></thead><tbody>';
+  series.forEach((row, i) => {
+    html += '<tr><td>' + blockLabel(i) + '</td><td>' + (row.units || 0) + '</td><td>' + fmt1(row.qp) + '</td><td>' + (row.gpa !== null ? fmt2(row.gpa) : '\u2014') + '</td><td>' + row.cu + '</td><td>' + fmt1(row.cq) + '</td><td><b>' + (row.cgpa !== null ? fmt2(row.cgpa) : '\u2014') + '</b></td></tr>';
+  });
+  html += '</tbody></table></div>';
+  html += '<div class="card" style="margin-top:14px;"><h3>Cumulative to date</h3><div class="kpis">';
+  html += kpiTile('Total units', String(cg.units), 'navy');
+  html += kpiTile('Total quality points', fmt1(cg.qp), 'blue');
+  html += kpiTile('CGPA', cg.cgpa !== null ? fmt2(cg.cgpa) : '\u2014', 'green');
+  html += kpiTile('Projected class of degree', degreeClass(cg.cgpa, s.scale), 'amber', true);
+  html += '</div></div>';
+  return html;
+}
+
+function renderPerformance(){
+  const series = cumulativeSeries();
+  const filled = series.map((r,i) => ({ ...r, label: blockLabel(i) })).filter(r => r.units > 0);
+  let html = '';
+  if (filled.length === 0){
+    html += '<p class="section-sub">Fill in at least one semester on the GPA calculator to see your trend here.</p>';
+    return html;
+  }
+  html += '<div class="card chartcard"><h3>GPA &amp; CGPA trend</h3>' + trendSVG(filled) + '</div>';
+  const gpas = filled.map(r => r.gpa);
+  const best = Math.max(...gpas), worst = Math.min(...gpas);
+  const avg = gpas.reduce((a,b) => a+b, 0) / gpas.length;
+  html += '<div class="kpis">';
+  html += kpiTile('Best semester GPA', fmt2(best), 'green');
+  html += kpiTile('Lowest semester GPA', fmt2(worst), 'red');
+  html += kpiTile('Average semester GPA', fmt2(avg), 'blue');
+  html += '</div>';
+  return html;
+}
+function trendSVG(rows){
+  const W = 640, H = 240, padL = 34, padR = 14, padT = 16, padB = 30;
+  const maxY = 5;
+  const innerW = W - padL - padR, innerH = H - padT - padB;
+  const x = i => padL + (rows.length === 1 ? innerW/2 : (i * innerW / (rows.length - 1)));
+  const y = v => padT + innerH - (v / maxY) * innerH;
+  const gpaPts = rows.map((r,i) => x(i) + ',' + y(r.gpa)).join(' ');
+  const cgpaPts = rows.map((r,i) => x(i) + ',' + y(r.cgpa)).join(' ');
+  let grid = '';
+  for (let g = 0; g <= 5; g++){
+    const yy = y(g);
+    grid += '<line x1="' + padL + '" y1="' + yy + '" x2="' + (W - padR) + '" y2="' + yy + '" stroke="#E1DFD8" stroke-width="1"/>';
+    grid += '<text x="' + (padL - 8) + '" y="' + (yy + 3) + '" font-size="9" fill="#6B7280" text-anchor="end">' + g + '</text>';
+  }
+  let labels = rows.map((r,i) => '<text x="' + x(i) + '" y="' + (H - 10) + '" font-size="8.5" fill="#6B7280" text-anchor="middle">' + r.label.replace(' ', ' ') + '</text>').join('');
+  let dots = rows.map((r,i) => '<circle cx="' + x(i) + '" cy="' + y(r.gpa) + '" r="3" fill="#2E5395"/><circle cx="' + x(i) + '" cy="' + y(r.cgpa) + '" r="3" fill="#1E7145"/>').join('');
+  return '<svg viewBox="0 0 ' + W + ' ' + H + '" xmlns="http://www.w3.org/2000/svg">' + grid +
+    '<polyline points="' + gpaPts + '" fill="none" stroke="#2E5395" stroke-width="2"/>' +
+    '<polyline points="' + cgpaPts + '" fill="none" stroke="#1E7145" stroke-width="2" stroke-dasharray="4,3"/>' +
+    dots + labels +
+    '<circle cx="' + (padL) + '" cy="10" r="3" fill="#2E5395"/><text x="' + (padL+8) + '" y="13" font-size="9" fill="#20242C">Semester GPA</text>' +
+    '<circle cx="' + (padL+120) + '" cy="10" r="3" fill="#1E7145"/><text x="' + (padL+128) + '" y="13" font-size="9" fill="#20242C">Running CGPA</text>' +
+    '</svg>';
+}
+
+function renderCarryover(){
+  const s = state.settings;
+  const cols = [
+    { key:'code', label:'Code', type:'text' },
+    { key:'title', label:'Course title', type:'text' },
+    { key:'units', label:'Units', type:'number' },
+    { key:'failedIn', label:'Level/Sem failed', type:'text' },
+    { key:'grade', label:'Grade obtained', type:'select', options: gradesForScale(s.scale) },
+    { key:'retakeIn', label:'Retake semester', type:'text' },
+    { key:'newGrade', label:'New grade', type:'select', options: [{v:'',l:'-'}].concat(gradesForScale(s.scale)) },
+    { key:'status', label:'Status', type:'computed', compute: r => {
+        if (!r.newGrade) return badge('Pending', 'warn');
+        if (r.newGrade === 'F') return badge('Still failed', 'bad');
+        return badge('Cleared', 'ok');
+      } }
+  ];
+  let html = renderEditableTable('carryover', cols, state.carryover);
+  html += '<button class="addrow" onclick="addRow(\'carryover\', emptyCarryoverRow)">+ Add carryover course</button>';
+  return html;
+}
+
+function renderAssignments(){
+  const cols = [
+    { key:'course', label:'Course', type:'text' },
+    { key:'title', label:'Assignment / CA title', type:'text' },
+    { key:'given', label:'Date given', type:'date' },
+    { key:'due', label:'Due date', type:'date' },
+    { key:'submitted', label:'Submitted?', type:'select', options:[{v:'',l:'-'},{v:'Y',l:'Yes'},{v:'N',l:'No'}] },
+    { key:'score', label:'Score', type:'number' },
+    { key:'max', label:'Max', type:'number' },
+    { key:'status', label:'Status', type:'computed', compute: r => {
+        if (!r.due) return '';
+        if (r.submitted === 'Y') return badge('Submitted', 'ok');
+        const d = daysBetween(r.due);
+        if (d < 0) return badge('Overdue', 'bad');
+        return badge('Pending', 'warn');
+      } }
+  ];
+  let html = renderEditableTable('assignments', cols, state.assignments);
+  html += '<button class="addrow" onclick="addRow(\'assignments\', emptyAssignmentRow)">+ Add assignment</button>';
+  return html;
+}
+
+function renderTests(){
+  const s = state.settings;
+  const cols = [
+    { key:'course', label:'Course', type:'text' },
+    { key:'type', label:'Assessment type', type:'select', options:['CA Test 1','CA Test 2','Mid-Semester Test','Practical/Lab','Assignment CA','Final Exam'] },
+    { key:'date', label:'Date', type:'date' },
+    { key:'score', label:'Score', type:'number' },
+    { key:'max', label:'Max', type:'number' },
+    { key:'weight', label:'Weight %', type:'number' },
+    { key:'weighted', label:'Weighted score', type:'computed', num:true, compute: r => {
+        const sc = parseFloat(r.score), mx = parseFloat(r.max), w = parseFloat(r.weight);
+        if (!sc || !mx || isNaN(w)) return '';
+        return fmt1((sc / mx) * w);
+      } }
+  ];
+  let html = '<p class="section-sub">CA = Continuous Assessment. Weight % is how much that test/exam counts toward the final course score (commonly 30% CA + 70% Exam, or 40/60).</p>';
+  html += renderEditableTable('tests', cols, state.tests);
+  html += '<button class="addrow" onclick="addRow(\'tests\', emptyTestRow)">+ Add test / exam</button>';
+
+  const byCourse = {};
+  state.tests.forEach(t => {
+    const code = (t.course || '').trim().toUpperCase();
+    if (!code) return;
+    const sc = parseFloat(t.score), mx = parseFloat(t.max), w = parseFloat(t.weight);
+    const wScore = (sc && mx && !isNaN(w)) ? (sc / mx) * w : 0;
+    byCourse[code] = (byCourse[code] || 0) + wScore;
+  });
+  const codes = Object.keys(byCourse);
+  if (codes.length){
+    html += '<div class="card" style="margin-top:14px;"><h3>Projected course score</h3><div class="tablewrap"><table class="data"><thead><tr><th>Course</th><th>Total weighted score</th><th>Projected grade</th></tr></thead><tbody>';
+    codes.forEach(code => {
+      const total = byCourse[code];
+      let grade = 'F';
+      if (total >= 70) grade = 'A';
+      else if (total >= 60) grade = 'B';
+      else if (total >= 50) grade = 'C';
+      else if (total >= 45) grade = 'D';
+      else if (total >= 40 && s.scale === '5') grade = 'E';
+      html += '<tr><td>' + esc(code) + '</td><td>' + fmt1(total) + '</td><td><b>' + grade + '</b></td></tr>';
+    });
+    html += '</tbody></table></div></div>';
+  }
+  return html;
+}
+
+function renderAttendance(){
+  const cols = [
+    { key:'course', label:'Course', type:'text' },
+    { key:'held', label:'Classes held', type:'number' },
+    { key:'attended', label:'Classes attended', type:'number' },
+    { key:'pctv', label:'Attendance %', type:'computed', num:true, compute: r => {
+        const h = parseFloat(r.held), a = parseFloat(r.attended);
+        if (!h) return '';
+        return pct(a / h);
+      } },
+    { key:'eligible', label:'Exam eligibility', type:'computed', compute: r => {
+        const h = parseFloat(r.held), a = parseFloat(r.attended);
+        if (!h) return '';
+        return (a / h) >= 0.75 ? badge('Eligible', 'ok') : badge('Below 75% - at risk', 'bad');
+      } }
+  ];
+  let html = '<p class="section-sub">Most Nigerian universities require at least 75% lecture attendance to sit the exam.</p>';
+  html += renderEditableTable('attendance', cols, state.attendance);
+  html += '<button class="addrow" onclick="addRow(\'attendance\', emptyAttendanceRow)">+ Add course</button>';
+  return html;
+}
+
+function renderDeadlines(){
+  const cols = [
+    { key:'due', label:'Due date', type:'date' },
+    { key:'task', label:'Task / deliverable', type:'text' },
+    { key:'category', label:'Course / category', type:'text' },
+    { key:'priority', label:'Priority', type:'select', options:['High','Medium','Low'] },
+    { key:'status', label:'Status', type:'computed', compute: r => {
+        if (!r.due) return '';
+        const d = daysBetween(r.due);
+        if (d < 0) return badge('Overdue', 'bad');
+        if (d <= 3) return badge('Due soon', 'warn');
+        return badge('Upcoming', 'ok');
+      } }
+  ];
+  let rows = state.deadlines.map((r, idx) => ({ r, idx }));
+  rows.sort((a, b) => {
+    if (!a.r.due) return 1;
+    if (!b.r.due) return -1;
+    return a.r.due < b.r.due ? -1 : 1;
+  });
+  let html = renderEditableTable('deadlines', cols, state.deadlines);
+  html += '<button class="addrow" onclick="addRow(\'deadlines\', emptyDeadlineRow)">+ Add deadline</button>';
+  return html;
+}
+
+function renderTimetable(){
+  let html = '<div class="tablewrap"><table class="timetable"><thead><tr><th>Time</th>' + DAYS.map(d => '<th>' + d + '</th>').join('') + '</tr></thead><tbody>';
+  TIME_SLOTS.forEach((slot, r) => {
+    html += '<tr><td class="timecell">' + slot + '</td>';
+    DAYS.forEach((d, c) => {
+      html += '<td><input value="' + esc(state.timetable[r][c]) + '" oninput="onTimetableChange(' + r + ',' + c + ',this.value)"></td>';
+    });
+    html += '</tr>';
+  });
+  html += '</tbody></table></div>';
+  return html;
+}
+function onTimetableChange(r, c, value){
+  state.timetable[r][c] = value;
+  scheduleSave('timetable');
+}
+
+function renderSiwes(){
+  const cols = [
+    { key:'week', label:'Week', type:'number' },
+    { key:'from', label:'Date from', type:'date' },
+    { key:'to', label:'Date to', type:'date' },
+    { key:'dept', label:'Dept / unit', type:'text' },
+    { key:'tasks', label:'Tasks performed', type:'text' },
+    { key:'skills', label:'Skills acquired', type:'text' },
+    { key:'hours', label:'Hours', type:'number' },
+    { key:'signed', label:'Sign-off', type:'select', options:[{v:'',l:'-'},{v:'Y',l:'Yes'},{v:'N',l:'No'}] }
+  ];
+  let html = renderEditableTable('siwes', cols, state.siwes);
+  html += '<button class="addrow" onclick="addRow(\'siwes\', () => emptySiwesRow(state.siwes.length + 1))">+ Add week</button>';
+  const totalHours = state.siwes.reduce((s,r) => s + (parseFloat(r.hours) || 0), 0);
+  const signedWeeks = state.siwes.filter(r => r.signed === 'Y').length;
+  html += '<div class="kpis" style="margin-top:14px;">' + kpiTile('Total hours logged', String(totalHours), 'green') + kpiTile('Weeks signed off', signedWeeks + ' / ' + state.siwes.length, 'blue') + '</div>';
+  return html;
+}
+
+function renderFyp(){
+  let html = '<div class="tablewrap"><table class="data"><thead><tr><th>Milestone</th><th>Planned date</th><th>Actual date</th><th>Status</th><th>Supervisor remarks</th></tr></thead><tbody>';
+  FYP_MILESTONES.forEach((m, i) => {
+    const row = state.fyp[i];
+    let status;
+    if (row.actual) status = badge('Completed', 'ok');
+    else if (row.planned && daysBetween(row.planned) < 0) status = badge('Overdue', 'bad');
+    else status = badge('Pending', 'muted');
+    html += '<tr><td>' + esc(m) + '</td>' +
+      '<td><input type="date" data-sec="fyp" data-i="' + i + '" data-f="planned" value="' + esc(row.planned) + '" oninput="onFieldChange(this)"></td>' +
+      '<td><input type="date" data-sec="fyp" data-i="' + i + '" data-f="actual" value="' + esc(row.actual) + '" oninput="onFieldChange(this)"></td>' +
+      '<td>' + status + '</td>' +
+      '<td><input type="text" data-sec="fyp" data-i="' + i + '" data-f="remarks" value="' + esc(row.remarks) + '" oninput="onFieldChange(this)"></td></tr>';
+  });
+  html += '</tbody></table></div>';
+  return html;
+}
+
+function renderGoals(){
+  const g = state.goals;
+  const cg = computeCGPA();
+  const remainingUnits = (parseFloat(g.estUnits) || 0) * (parseFloat(g.semestersRemaining) || 0);
+  let required = null;
+  if (remainingUnits > 0 && cg.units >= 0){
+    required = ((parseFloat(g.targetCGPA) * (cg.units + remainingUnits)) - cg.qp) / remainingUnits;
+  }
+  const scaleMax = state.settings.scale === '5' ? 5 : 4;
+  let html = '<div class="card"><h3>Target</h3><div class="fgrid">';
+  html += goalField('targetCGPA', 'Target CGPA', 'number');
+  html += '<div class="field"><label>Target class of degree</label><select onchange="onGoalChange(\'targetClass\', this.value)">' +
+    ['First Class','Second Class Upper','Second Class Lower','Third Class','Pass'].map(c => '<option value="' + c + '"' + (g.targetClass === c ? ' selected' : '') + '>' + c + '</option>').join('') + '</select></div>';
+  html += infoLine('Current CGPA', cg.cgpa !== null ? fmt2(cg.cgpa) : '\u2014');
+  html += infoLine('Gap to target', cg.cgpa !== null ? fmt2(parseFloat(g.targetCGPA) - cg.cgpa) : '\u2014');
+  html += '</div></div>';
+
+  html += '<div class="card"><h3>Planning your remaining semesters</h3><div class="fgrid">';
+  html += goalField('estUnits', 'Estimated units per remaining semester', 'number');
+  html += goalField('semestersRemaining', 'Semesters remaining', 'number');
+  html += '</div><div class="kpis" style="margin-top:12px;">';
+  html += kpiTile('Required average GPA going forward', required !== null && isFinite(required) ? fmt2(required) : '\u2014', (required !== null && required > scaleMax) ? 'red' : 'green');
+  html += '</div>';
+  if (required !== null && required > scaleMax){
+    html += '<p class="footnote" style="color:var(--red);">This target is not mathematically reachable in the semesters you\'ve entered on your scale (max ' + scaleMax.toFixed(2) + '). Add more semesters or lower the target.</p>';
+  } else {
+    html += '<p class="footnote">Required Average GPA = [(Target CGPA &times; (Current Units + Remaining Units)) - Current Quality Points] &divide; Remaining Units.</p>';
+  }
+  html += '</div>';
+
+  html += '<div class="card"><h3>Personal goals</h3>';
+  const cols = [
+    { key:'goal', label:'Goal', type:'text' },
+    { key:'date', label:'Target date', type:'date' },
+    { key:'status', label:'Status', type:'select', options:['Not Started','In Progress','Done'] }
+  ];
+  html += renderEditableTable('goals.personal', cols, g.personal);
+  html += '<button class="addrow" onclick="addPersonalGoal()">+ Add goal</button></div>';
+  return html;
+}
+function goalField(key, label, type){
+  return '<div class="field"><label>' + esc(label) + '</label><input type="' + type + '" value="' + esc(state.goals[key]) + '" oninput="onGoalChange(\'' + key + '\', this.value)"></div>';
+}
+function onGoalChange(key, value){
+  state.goals[key] = value;
+  scheduleSave('goals');
+  renderCurrentPane();
+}
+function addPersonalGoal(){
+  state.goals.personal.push({ goal:'', date:'', status:'Not Started' });
+  scheduleSave('goals');
+  renderCurrentPane();
+}
+
+/* ------------------------------------------------------------
+   Navigation
+   ------------------------------------------------------------ */
+const NAV = [
+  { group: 'Overview', items: [ { id: 'dashboard', label: 'Dashboard' } ] },
+  { group: 'Academics', items: [
+    { id: 'settings', label: 'Settings' },
+    { id: 'courses', label: 'Course database' },
+    { id: 'gpa', label: 'GPA calculator' },
+    { id: 'cgpa', label: 'CGPA calculator' },
+    { id: 'performance', label: 'Performance analysis' },
+    { id: 'carryover', label: 'Carryover tracker' }
+  ]},
+  { group: 'Coursework', items: [
+    { id: 'assignments', label: 'Assignments' },
+    { id: 'tests', label: 'Tests & exams' },
+    { id: 'attendance', label: 'Attendance' },
+    { id: 'deadlines', label: 'Deadlines' },
+    { id: 'timetable', label: 'Study timetable' }
+  ]},
+  { group: 'Beyond class', items: [
+    { id: 'siwes', label: 'SIWES / IT' },
+    { id: 'fyp', label: 'Final year project' },
+    { id: 'goals', label: 'Academic goals' }
+  ]}
+];
+const SUBTITLES = {
+  dashboard: 'Your academic life at a glance.',
+  settings: 'Grading scale, student info and reference tables.',
+  courses: 'Master record of every course you register for.',
+  gpa: 'One block per semester - grade point and quality points calculate automatically.',
+  cgpa: 'Running cumulative CGPA, pulled from every semester.',
+  performance: 'Semester-by-semester GPA and CGPA trend.',
+  carryover: 'Track failed/carry-over courses until cleared.',
+  assignments: 'Every assignment and take-home CA.',
+  tests: 'CA tests, mid-semester tests and exam scores.',
+  attendance: 'Classes held vs attended, and 75% exam eligibility.',
+  deadlines: 'Every deadline in one place.',
+  timetable: 'Your weekly lecture and study schedule.',
+  siwes: 'Weekly SIWES / Industrial Training logbook.',
+  fyp: 'Final year project milestones.',
+  goals: 'Set a target CGPA and see what it takes to reach it.'
+};
+const RENDERERS = {
+  dashboard: renderDashboard, settings: renderSettings, courses: renderCourses,
+  gpa: renderGPA, cgpa: renderCGPA, performance: renderPerformance, carryover: renderCarryover,
+  assignments: renderAssignments, tests: renderTests, attendance: renderAttendance,
+  deadlines: renderDeadlines, timetable: renderTimetable, siwes: renderSiwes, fyp: renderFyp, goals: renderGoals
+};
+const ALL_ITEMS = NAV.flatMap(g => g.items);
+
+let activeTab = 'dashboard';
+
+function buildNav(){
+  const nav = document.getElementById('navgroups');
+  nav.innerHTML = NAV.map(g =>
+    '<div class="navlabel">' + esc(g.group) + '</div>' +
+    g.items.map(it => '<button class="navitem" data-id="' + it.id + '" onclick="switchTab(\'' + it.id + '\')"><span class="dot"></span>' + esc(it.label) + '</button>').join('')
+  ).join('');
+
+  const mt = document.getElementById('mobiletabs');
+  mt.innerHTML = ALL_ITEMS.map(it => '<button data-id="' + it.id + '" onclick="switchTab(\'' + it.id + '\')">' + esc(it.label) + '</button>').join('');
+}
+
+function switchTab(id){
+  activeTab = id;
+  renderCurrentPane();
+  document.getElementById('content').scrollTop = 0;
+  window.scrollTo(0, 0);
+}
+
+function renderCurrentPane(focusKey){
+  const item = ALL_ITEMS.find(it => it.id === activeTab) || ALL_ITEMS[0];
+  document.getElementById('pagetitle').textContent = item.label;
+  document.getElementById('pagesub').textContent = SUBTITLES[item.id] || '';
+  document.querySelectorAll('.navitem').forEach(b => b.classList.toggle('active', b.dataset.id === activeTab));
+  document.querySelectorAll('#mobiletabs button').forEach(b => b.classList.toggle('active', b.dataset.id === activeTab));
+  const renderer = RENDERERS[activeTab];
+  document.getElementById('content').innerHTML = renderer ? renderer() : '';
+  restoreFocus(focusKey);
+}
+
+/* ------------------------------------------------------------
+   Boot
+   ------------------------------------------------------------ */
+async function boot(){
+  const session = await getSession();
+  if (session && session.username){
+    const reg = await loadRegistry();
+    if (reg[session.username]){
+      currentUser = session.username;
+      state = freshState();
+      await loadAll();
+      await showApp();
+      return;
+    }
+  }
+  document.getElementById('authscreen').style.display = 'flex';
+  setAuthMode('signin');
+}
+boot();
+
+/* ------------------------------------------------------------
+   Installable app support (PWA) - only matters when this file is
+   hosted (http/https). Opened directly from disk, everything above
+   still works fully; you just won't get an "Install" prompt.
+   ------------------------------------------------------------ */
+let deferredInstallPrompt = null;
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredInstallPrompt = e;
+  const btn = document.getElementById('installBtn');
+  if (btn) btn.style.display = 'inline-flex';
+});
+async function installApp(){
+  if (!deferredInstallPrompt) return;
+  deferredInstallPrompt.prompt();
+  await deferredInstallPrompt.userChoice;
+  deferredInstallPrompt = null;
+  const btn = document.getElementById('installBtn');
+  if (btn) btn.style.display = 'none';
+}
+if ('serviceWorker' in navigator && (location.protocol === 'http:' || location.protocol === 'https:')){
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js').catch(() => { /* fine if missing - app still works */ });
+  });
+}
+
+</script>
+</body>
+</html>
